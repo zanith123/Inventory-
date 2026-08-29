@@ -99,8 +99,30 @@ if ($host !== '127.0.0.1' && $host !== 'localhost' && $host !== 'db') {
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (PDOException $e) {
+    // If unknown database error (1049), attempt auto-creation of database
+    if ($e->getCode() == 1049 || str_contains($e->getMessage(), 'Unknown database')) {
+        try {
+            $dsnNoDb = "mysql:host={$host};port={$port};charset={$charset}";
+            $pdoInit = new PDO($dsnNoDb, $user, $pass, $options);
+            $pdoInit->exec("CREATE DATABASE IF NOT EXISTS `$db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            $pdo = new PDO($dsn, $user, $pass, $options);
+        } catch (PDOException $ex) {
+            error_log('Database creation failed: ' . $ex->getMessage());
+            die('Database connection failed: ' . htmlspecialchars($ex->getMessage()));
+        }
+    } else {
+        error_log('Database connection error: ' . $e->getMessage());
+        if ($appDebug) {
+            die('Database connection failed: ' . htmlspecialchars($e->getMessage()) . '<br><br>Host: ' . htmlspecialchars($host) . '<br>Port: ' . htmlspecialchars($port) . '<br>DB: ' . htmlspecialchars($db) . '<br>User: ' . htmlspecialchars($user));
+        } else {
+            die('Database connection error. Please verify configuration or check server logs. (Add ?debug=1 to URL or set APP_DEBUG=true to view exact error details)');
+        }
+    }
+}
 
-    // Auto-create sessions table if missing
+// Auto-create sessions table if missing
+try {
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS sessions (
             id VARCHAR(128) NOT NULL PRIMARY KEY,
@@ -109,14 +131,8 @@ try {
             INDEX idx_last_access (last_access)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
-
 } catch (PDOException $e) {
-    error_log('Database connection error: ' . $e->getMessage());
-
-    if ($appDebug) {
-        die('Database connection failed: ' . htmlspecialchars($e->getMessage()) . '<br><br>Host: ' . htmlspecialchars($host) . '<br>Port: ' . htmlspecialchars($port) . '<br>DB: ' . htmlspecialchars($db) . '<br>User: ' . htmlspecialchars($user));
-    } else {
-        die('Database connection error. Please verify configuration or check server logs. (Add ?debug=1 to URL or set APP_DEBUG=true to view exact error details)');
-    }
+    // Session table check fallback
 }
+
 

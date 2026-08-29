@@ -1,14 +1,16 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../includes/helpers.php';
 
 $activePage = 'stock-adjustment';
 $error = '';
-$success = '';
 
 $products = $pdo->query('SELECT * FROM products ORDER BY name')->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
+
     $productId = (int) $_POST['product_id'];
     $newQty = (float) $_POST['new_qty'];
     $reason = trim($_POST['reason']);
@@ -38,10 +40,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$newQty, $productId]);
 
         $pdo->commit();
-        $success = __('stockadj_applied_prefix') . " $reference — {$product['name']}: {$product['current_stock']} → $newQty.";
-
-        // refresh products list so the dropdown shows the new stock
-        $products = $pdo->query('SELECT * FROM products ORDER BY name')->fetchAll();
+        set_flash('success', __('stockadj_applied_prefix') . " $reference — {$product['name']}: {$product['current_stock']} → $newQty.");
+        header('Location: ' . BASE_URL . '/stock-adjustment/index.php');
+        exit;
     }
 }
 
@@ -50,18 +51,24 @@ $recent = $pdo->query("SELECT t.*, p.name product_name, i.qty
                         LEFT JOIN stock_transaction_items i ON i.transaction_id = t.id
                         LEFT JOIN products p ON p.id = i.product_id
                         WHERE t.type = 'adjustment'
-                        ORDER BY t.id DESC LIMIT 5")->fetchAll();
+                        ORDER BY t.id DESC LIMIT 6")->fetchAll();
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<h4 class="mb-4"><?= __('nav_stock_adjustments') ?></h4>
-<?php if ($success): ?><div class="alert alert-success"><?= htmlspecialchars($success) ?></div><?php endif; ?>
-<?php if ($error): ?><div class="alert alert-danger"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h4 class="mb-1"><?= __('nav_stock_adjustments') ?></h4>
+    <p class="text-secondary small mb-0">Reconcile physical inventory counts, write-offs, and audit corrections</p>
+  </div>
+</div>
+
+<?php if ($error): ?><div class="alert alert-danger py-2 mb-3"><?= htmlspecialchars($error) ?></div><?php endif; ?>
 
 <div class="row g-3">
   <div class="col-lg-8">
     <form method="post">
+      <?= csrf_field() ?>
       <div class="card p-3 mb-3">
         <div class="bracket-label mb-3"><?= __('common_transaction_details') ?></div>
         <div class="row">
@@ -92,8 +99,8 @@ require_once __DIR__ . '/../includes/header.php';
           <input type="number" name="new_qty" id="adjQty" class="form-control" value="0" min="0" oninput="updatePreview()">
         </div>
         <div id="adjPreview" class="small text-secondary mb-3"><?= __('stockadj_preview_hint') ?></div>
-        <div class="alert alert-warning small"><?= __('stockadj_warning') ?></div>
-        <button class="btn btn-primary w-100"><i class="bi bi-arrow-repeat"></i> <?= __('stockadj_submit_button') ?></button>
+        <div class="alert alert-warning small"><i class="bi bi-exclamation-triangle me-1"></i><?= __('stockadj_warning') ?></div>
+        <button class="btn btn-primary w-100 py-2"><i class="bi bi-arrow-repeat me-1"></i> <?= __('stockadj_submit_button') ?></button>
       </div>
     </form>
   </div>
@@ -101,14 +108,14 @@ require_once __DIR__ . '/../includes/header.php';
   <div class="col-lg-4">
     <div class="card p-3">
       <div class="bracket-label mb-3"><?= __('stockadj_recent_title') ?></div>
-      <?php if (!$recent): ?><p class="text-secondary small"><?= __('stockadj_empty') ?></p><?php endif; ?>
+      <?php if (!$recent): ?><p class="text-secondary small mb-0"><?= __('stockadj_empty') ?></p><?php endif; ?>
       <?php foreach ($recent as $t): ?>
         <div class="border-bottom pb-2 mb-2">
-          <div class="d-flex justify-content-between small">
-            <span class="mono text-primary"><?= htmlspecialchars($t['reference']) ?></span>
+          <div class="d-flex justify-content-between align-items-center small mb-1">
+            <span class="mono text-primary fw-bold"><?= htmlspecialchars($t['reference']) ?></span>
             <span class="mono text-secondary"><?= $t['transaction_date'] ?></span>
           </div>
-          <div class="small mt-1"><?= htmlspecialchars($t['product_name'] ?? '—') ?></div>
+          <div class="small fw-semibold"><?= htmlspecialchars($t['product_name'] ?? '—') ?></div>
           <div class="text-secondary small"><?= htmlspecialchars($t['note']) ?></div>
         </div>
       <?php endforeach; ?>

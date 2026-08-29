@@ -125,3 +125,44 @@ body.theme-light .form-control::placeholder { color: #8792A0; }
   margin-bottom:8px;
 }
 .theme-toggle-btn:hover{ border-color:var(--accent); color:var(--accent); }
+
+/* Version 2.0 Utilities & Print Media Styles */
+.card-stat {
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.card-stat:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent) !important;
+}
+
+.barcode-label-box {
+  background: #ffffff;
+  color: #000000;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  display: inline-block;
+  text-align: center;
+  margin: 0 auto;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-area, .printable-area * {
+    visibility: visible;
+  }
+  .printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+

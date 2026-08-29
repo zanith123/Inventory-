@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../config/base_url.php';
+require_once __DIR__ . '/helpers.php';
+
 // $activePage should be set by the including page, e.g. $activePage = 'category';
 $activePage = $activePage ?? '';
 function navClass($page, $active) {
@@ -15,17 +17,18 @@ function navClass($page, $active) {
   }
 </script>
 <meta charset="UTF-8">
-<title>Inventory</title>
+<title>Inventory Management System v2.0</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/style.css?v=<?= ASSET_VER ?>">
 <style>
   .sidebar { min-height:100vh; }
   .sidebar .nav-link { padding:.5rem 1rem; margin-bottom:2px; }
 </style>
 </head>
-<body lang="<?= $_SESSION['lang'] ?>">
+<body lang="<?= $_SESSION['lang'] ?? 'en' ?>">
 <script>
   if (document.documentElement.classList.contains('theme-light-pending')) {
     document.body.classList.add('theme-light');
@@ -34,9 +37,12 @@ function navClass($page, $active) {
 <div class="d-flex">
   <!-- SIDEBAR -->
   <nav class="sidebar p-3" style="width:230px;">
-    <div class="d-flex align-items-center gap-2 mb-4">
-      <span class="barcode text-primary"><i style="height:60%"></i><i style="height:100%"></i><i style="height:40%"></i><i style="height:80%"></i></span>
-      <span class="fs-5 fw-bold">Inventory</span>
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div class="d-flex align-items-center gap-2">
+        <span class="barcode text-primary"><i style="height:60%"></i><i style="height:100%"></i><i style="height:40%"></i><i style="height:80%"></i></span>
+        <span class="fs-5 fw-bold">Inventory</span>
+      </div>
+      <span class="badge bg-primary text-dark font-monospace" style="font-size: 0.65rem;">v2.0</span>
     </div>
 
     <div class="sidebar-section"><?= __('nav_overview') ?></div>
@@ -66,11 +72,13 @@ function navClass($page, $active) {
     <button type="button" class="theme-toggle-btn" onclick="toggleTheme()">
       <i class="bi bi-circle-half"></i> <span id="themeToggleLabel">Dark</span>
     </button>
-    <a href="?lang=<?= $_SESSION['lang'] === 'km' ? 'en' : 'km' ?>" class="theme-toggle-btn text-decoration-none d-block text-center">
-      <?= $_SESSION['lang'] === 'km' ? 'EN' : 'ខ្មែរ' ?>
+    <a href="?lang=<?= ($_SESSION['lang'] ?? 'en') === 'km' ? 'en' : 'km' ?>" class="theme-toggle-btn text-decoration-none d-block text-center">
+      <?= ($_SESSION['lang'] ?? 'en') === 'km' ? 'EN' : 'ខ្មែរ' ?>
     </a>
     <a class="nav-link text-secondary" href="<?= BASE_URL ?>/auth/logout.php"><i class="bi bi-box-arrow-left me-2"></i><?= __('nav_sign_out') ?></a>
   </nav>
 
   <!-- MAIN CONTENT -->
-  <main class="flex-grow-1 p-4">
+  <main class="flex-grow-1 p-4 position-relative">
+    <?= render_flash() ?>
+

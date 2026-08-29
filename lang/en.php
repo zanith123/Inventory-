@@ -235,4 +235,18 @@ return [
     'user_err_required' => 'Name, email, and temporary password are required.',
     'user_err_password_short' => 'Temporary password must be at least 6 characters.',
     'user_err_self_role' => 'You cannot change your own role.',
+
+    // Version 2.0 Keys
+    'v2_barcode_print' => 'Print Barcode Label',
+    'v2_print' => 'Print',
+    'v2_chart_movement' => 'Stock Movements (Monthly)',
+    'v2_chart_category' => 'Inventory Valuation by Category',
+    'v2_print_receipt' => 'Print Receipt',
+    'v2_date_from' => 'From Date',
+    'v2_date_to' => 'To Date',
+    'v2_filter' => 'Filter',
+    'v2_all_types' => 'All Types',
+    'v2_low_stock_watch' => 'Low Stock Watchlist',
+    'v2_quick_actions' => 'Quick Operations',
 ];
+

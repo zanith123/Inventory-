@@ -1,21 +1,20 @@
 -- ================================================
--- Inventory Management System - Database Schema
--- Course: Advanced PHP and MySQL
+-- Inventory Management System v2.0 - Database Schema
 -- ================================================
 
 CREATE DATABASE IF NOT EXISTS inventory_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE inventory_db;
 
 -- Roles (used for permission levels: Admin / User / Viewer)
-CREATE TABLE roles (
+CREATE TABLE IF NOT EXISTS roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL UNIQUE
 );
 
-INSERT INTO roles (name) VALUES ('Admin'), ('User'), ('Viewer');
+INSERT IGNORE INTO roles (id, name) VALUES (1, 'Admin'), (2, 'User'), (3, 'Viewer');
 
 -- Users (login accounts)
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
@@ -28,7 +27,7 @@ CREATE TABLE users (
 );
 
 -- Categories (Laptop, PC, TV, ...)
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     slug VARCHAR(100) NOT NULL UNIQUE,
@@ -37,14 +36,14 @@ CREATE TABLE categories (
 );
 
 -- Units (pcs, box, ream, kg, ltr, btr, set ...)
-CREATE TABLE units (
+CREATE TABLE IF NOT EXISTS units (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     note TEXT
 );
 
 -- Suppliers
-CREATE TABLE suppliers (
+CREATE TABLE IF NOT EXISTS suppliers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     phone VARCHAR(30),
@@ -54,7 +53,7 @@ CREATE TABLE suppliers (
 );
 
 -- Products
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(150) NOT NULL,
     sku VARCHAR(50) NOT NULL UNIQUE,
@@ -68,13 +67,16 @@ CREATE TABLE products (
     min_stock INT DEFAULT 0,
     current_stock INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_sku (sku),
+    INDEX idx_barcode (barcode),
+    INDEX idx_stock (current_stock, min_stock),
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL,
     FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE SET NULL
 );
 
 -- Stock transactions (Stock In / Stock Out / Adjustment headers)
-CREATE TABLE stock_transactions (
+CREATE TABLE IF NOT EXISTS stock_transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     reference VARCHAR(30) NOT NULL UNIQUE,
     type ENUM('in','out','adjustment') NOT NULL,
@@ -83,12 +85,14 @@ CREATE TABLE stock_transactions (
     supplier_id INT NULL,
     user_id INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_reference (reference),
+    INDEX idx_tx_date_type (transaction_date, type),
     FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 -- Stock transaction line items
-CREATE TABLE stock_transaction_items (
+CREATE TABLE IF NOT EXISTS stock_transaction_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     transaction_id INT NOT NULL,
     product_id INT NOT NULL,
@@ -106,4 +110,3 @@ CREATE TABLE IF NOT EXISTS sessions (
     last_access INT NOT NULL,
     INDEX idx_last_access (last_access)
 );
-

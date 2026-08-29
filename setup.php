@@ -48,15 +48,17 @@ try {
 
     outputMsg("Reading database schema from schema.sql...");
     $sqlSchema = file_get_contents($schemaFile);
-
-    // Split queries safely
-    $queries = array_filter(array_map('trim', explode(';', $sqlSchema)));
+    $schemaLines = array_filter(explode("\n", $sqlSchema), function($l) {
+        $t = trim($l);
+        return $t !== '' && !str_starts_with($t, '--') && !str_starts_with($t, '/*');
+    });
+    $cleanSchema = implode("\n", $schemaLines);
+    $queries = array_filter(array_map('trim', explode(';', $cleanSchema)));
 
     foreach ($queries as $q) {
-        if ($q === '' || str_starts_with($q, '--') || str_starts_with($q, '/*')) {
-            continue;
+        if ($q !== '') {
+            $pdo->exec($q);
         }
-        $pdo->exec($q);
     }
     outputMsg("Database tables created successfully!", "success");
 
@@ -65,23 +67,27 @@ try {
     if (file_exists($seedFile)) {
         outputMsg("Reading seed data from seed.sql...");
         $sqlSeed = file_get_contents($seedFile);
-        $seedQueries = array_filter(array_map('trim', explode(';', $sqlSeed)));
+        $seedLines = array_filter(explode("\n", $sqlSeed), function($l) {
+            $t = trim($l);
+            return $t !== '' && !str_starts_with($t, '--') && !str_starts_with($t, '/*');
+        });
+        $cleanSeed = implode("\n", $seedLines);
+        $seedQueries = array_filter(array_map('trim', explode(';', $cleanSeed)));
 
         foreach ($seedQueries as $sq) {
-            if ($sq === '' || str_starts_with($sq, '--') || str_starts_with($sq, '/*')) {
-                continue;
-            }
-            try {
-                $pdo->exec($sq);
-            } catch (PDOException $se) {
-                // Ignore duplicate key errors if already seeded
-                if ($se->getCode() !== '23000') {
-                    throw $se;
+            if ($sq !== '') {
+                try {
+                    $pdo->exec($sq);
+                } catch (PDOException $se) {
+                    if ($se->getCode() !== '23000') {
+                        throw $se;
+                    }
                 }
             }
         }
         outputMsg("Demo datasets and admin user seeded successfully!", "success");
     }
+
 
     outputMsg("Database installation and migration complete!", "success");
     if (!$isCli) {
