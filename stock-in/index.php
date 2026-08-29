@@ -51,12 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$recent = $pdo->query("SELECT t.*, COUNT(i.id) items, SUM(i.qty) total_qty, SUM(i.subtotal) total_value, s.name as supplier_name
+$recent = $pdo->query("SELECT t.id, t.reference, t.transaction_date, COUNT(i.id) items, SUM(i.qty) total_qty, SUM(i.subtotal) total_value, MAX(s.name) as supplier_name
                         FROM stock_transactions t
                         LEFT JOIN stock_transaction_items i ON i.transaction_id = t.id
                         LEFT JOIN suppliers s ON s.id = t.supplier_id
                         WHERE t.type = 'in'
-                        GROUP BY t.id ORDER BY t.id DESC LIMIT 6")->fetchAll();
+                        GROUP BY t.id, t.reference, t.transaction_date ORDER BY t.id DESC LIMIT 6")->fetchAll();
+
 
 require_once __DIR__ . '/../includes/header.php';
 ?>

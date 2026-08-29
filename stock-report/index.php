@@ -34,7 +34,8 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
                FROM stock_transactions t
                LEFT JOIN stock_transaction_items i ON i.transaction_id = t.id
                WHERE $whereSql
-               GROUP BY t.id ORDER BY t.id DESC";
+               GROUP BY t.id, t.reference, t.transaction_date, t.type, t.note ORDER BY t.id DESC";
+
     $stmtCsv = $pdo->prepare($sqlCsv);
     $stmtCsv->execute($params);
     $rows = $stmtCsv->fetchAll();
@@ -139,11 +140,12 @@ require_once __DIR__ . '/../includes/header.php';
   </div>
 
 <?php elseif ($tab === 'log'):
-  $sqlLog = "SELECT t.*, COUNT(i.id) items, SUM(i.qty) qty, SUM(i.subtotal) value
+  $sqlLog = "SELECT t.id, t.reference, t.transaction_date, t.type, t.note, COUNT(i.id) items, SUM(i.qty) qty, SUM(i.subtotal) value
              FROM stock_transactions t
              LEFT JOIN stock_transaction_items i ON i.transaction_id = t.id
              WHERE $whereSql
-             GROUP BY t.id ORDER BY t.id DESC";
+             GROUP BY t.id, t.reference, t.transaction_date, t.type, t.note ORDER BY t.id DESC";
+
   $stmtLog = $pdo->prepare($sqlLog);
   $stmtLog->execute($params);
   $rows = $stmtLog->fetchAll();

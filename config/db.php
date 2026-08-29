@@ -107,6 +107,7 @@ try {
             $pdoInit = new PDO($dsnNoDb, $user, $pass, $options);
             $pdoInit->exec("CREATE DATABASE IF NOT EXISTS `$db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
             $pdo = new PDO($dsn, $user, $pass, $options);
+            try { $pdo->exec("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))"); } catch (\Throwable $t) {}
         } catch (PDOException $ex) {
             error_log('Database creation failed: ' . $ex->getMessage());
             die('Database connection failed: ' . htmlspecialchars($ex->getMessage()));
@@ -120,6 +121,9 @@ try {
         }
     }
 }
+
+try { $pdo->exec("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))"); } catch (\Throwable $t) {}
+
 
 // Auto-create sessions table if missing
 try {
