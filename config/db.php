@@ -1,7 +1,7 @@
 <?php
 // ============================================================================
 // Database Connection (PDO + Prepared Statements)
-// Supports .env files, environment variables, and local development fallbacks
+// Supports .env files, environment variables, SSL (TiDB/Aiven/Cloud), and local fallbacks
 // ============================================================================
 
 // Lightweight .env loader if .env file exists and no external library is used
@@ -17,7 +17,6 @@ if (file_exists($envFile) && is_readable($envFile)) {
             list($key, $val) = explode('=', $line, 2);
             $key = trim($key);
             $val = trim($val);
-            // Remove optional surrounding quotes
             if ((str_starts_with($val, '"') && str_ends_with($val, '"')) ||
                 (str_starts_with($val, "'") && str_ends_with($val, "'"))) {
                 $val = substr($val, 1, -1);
@@ -66,10 +65,16 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,
 ];
 
+// Enable SSL when connecting to Cloud Databases (e.g. TiDB, Aiven, PlanetScale)
+if ($host !== '127.0.0.1' && $host !== 'localhost' && $host !== 'db') {
+    if (defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT')) {
+        $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+    }
+}
+
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (PDOException $e) {
-    // Log error internally without exposing credentials to the client
     error_log('Database connection error: ' . $e->getMessage());
 
     if ($appDebug) {
