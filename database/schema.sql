@@ -98,3 +98,12 @@ CREATE TABLE stock_transaction_items (
     FOREIGN KEY (transaction_id) REFERENCES stock_transactions(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
+
+-- Sessions (Used for database-backed session handler on Vercel / serverless setups)
+CREATE TABLE IF NOT EXISTS sessions (
+    id VARCHAR(128) NOT NULL PRIMARY KEY,
+    data TEXT NOT NULL,
+    last_access INT NOT NULL,
+    INDEX idx_last_access (last_access)
+);
+

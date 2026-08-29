@@ -69,85 +69,53 @@ A full-stack Inventory Management System for tracking products, stock movements,
 
 ---
 
-## 🚀 Installation & Setup
+## 🚀 Easy Deployment Options (ការណែនាំការ Deploy)
 
-### Option A — Local Development with XAMPP
+For full step-by-step instructions in **Khmer & English**, see the dedicated [DEPLOYMENT.md](DEPLOYMENT.md) guide.
 
-1. **Clone or Download the Repository:**
-   ```bash
-   cd C:\xampp\htdocs
-   git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git inventory-app
-   ```
-2. **Start Services:**
-   Open the XAMPP Control Panel and start **Apache** and **MySQL**.
-3. **Create Database:**
-   - Open [http://localhost/phpmyadmin](http://localhost/phpmyadmin).
-   - Create a database named `inventory_db`.
-4. **Import Database Tables & Seed Data:**
-   - In phpMyAdmin, select `inventory_db` → click **Import**.
-   - Import `database/schema.sql` (creates all tables).
-   - Import `database/seed.sql` (loads demo categories, products, and users).
-5. **Configure Environment (Optional):**
-   - Copy `.env.example` to `.env` if you need custom credentials:
-     ```bash
-     copy .env.example .env
-     ```
-   - Default XAMPP settings (`DB_HOST=127.0.0.1`, `DB_USER=root`, `DB_PASS=`) work out of the box with no changes required.
-6. **Launch Application:**
-   Open your browser and visit: `http://localhost/inventory-app/`
+### Quick Start with Automated Database Setup (`setup.php`)
+
+No need to manually import `.sql` files in phpMyAdmin! After configuring `.env`, just visit:
+`http://localhost/inventory-app/setup.php` or run `php setup.php` in terminal.
 
 ---
 
-### Option B — Local Development with Laragon
+### Option A — 1-Click Cloud Deployment (Render / Railway) ⭐
 
-1. **Clone the Repository:**
-   ```bash
-   cd C:\laragon\www
-   git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git inventory-app
-   ```
-2. **Start Laragon:**
-   Click **Start All** in the Laragon panel.
-3. **Import Database:**
-   - Open HeidiSQL / Database manager via Laragon.
-   - Create database `inventory_db`.
-   - Run `database/schema.sql`, followed by `database/seed.sql`.
-4. **Configure Environment:**
-   - Copy `.env.example` to `.env` if custom MySQL password is configured.
-5. **Access Application:**
-   Visit: `http://inventory-app.test/` or `http://localhost/inventory-app/`
+1. Push this repository to **GitHub**.
+2. Create a **Web Service** on [Render](https://render.com) or [Railway](https://railway.app).
+3. Connect your repository — the root `Dockerfile` is detected automatically!
+4. Add your database details in Environment Variables (`DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME` or `DATABASE_URL`).
+5. Deploy and visit `https://your-app.onrender.com/setup.php` to initialize tables.
 
 ---
 
-### Option C — Docker & Docker Compose (Quickest)
+### Option B — Local Development with Docker Compose
 
-You can run the entire PHP + Nginx + MySQL stack with a single command:
+Run the entire PHP 8.2 + Apache + MySQL 8.0 stack with a single command:
 
-1. **Start Containers:**
-   ```bash
-   docker compose up -d
-   ```
-   *(The database container automatically imports `database/schema.sql` and `database/seed.sql` on first boot).*
-2. **Access the App:**
-   Open [http://localhost:8080](http://localhost:8080) in your web browser.
-3. **Stop Containers:**
-   ```bash
-   docker compose down
-   ```
+```bash
+docker compose up -d
+```
+Open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ---
 
-### Option D — Shared Hosting / cPanel
+### Option C — Shared Hosting / cPanel (Hostinger, Khmer Web Hosts)
 
-1. **Create MySQL Database & User:**
-   - In cPanel, go to **MySQL Databases**.
-   - Create a new database (e.g. `cpaneluser_inventory`).
-   - Create a database user, assign a strong password, and grant **ALL PRIVILEGES**.
-2. **Upload Files:**
-   - Compress the project folder into a `.zip` (excluding any `.git` folder).
-   - Upload and extract it into `public_html/` (or a subdomain directory).
-3. **Import Database:**
-   - In cPanel, open **phpMyAdmin**.
-   - Select your newly created database and import `database/schema.sql`, then `database/seed.sql`.
+1. Create a MySQL database & user in cPanel.
+2. Upload application files to `public_html/`.
+3. Create `.env` file with database credentials.
+4. Visit `http://your-domain.com/setup.php` in your browser to run auto-installer.
+
+---
+
+### Option D — Local Development with XAMPP / Laragon
+
+1. Clone or copy project to `htdocs` or `www` directory.
+2. Create database `inventory_db` in phpMyAdmin or HeidiSQL.
+3. Open `http://localhost/inventory-app/setup.php` in browser to initialize tables.
+
 4. **Configure `.env`:**
    - Create or edit `.env` in the root folder with your cPanel database details:
      ```env

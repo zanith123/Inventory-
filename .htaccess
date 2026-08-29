@@ -1,0 +1,39 @@
+# ============================================================================
+# Inventory Management System - Apache & cPanel Configuration (.htaccess)
+# ============================================================================
+
+# 1. Disable Directory Browsing
+Options -Indexes
+
+# 2. Prevent Access to Sensitive Files (.env, .git, .sql, Dockerfile, etc.)
+<FilesMatch "^\.|\.sql$|\.yml$|\.json$|^Dockerfile|^deploy\.sh">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# 3. Enable URL Rewrite Engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Direct request to index.php if file or folder does not exist
+    # RewriteCond %{REQUEST_FILENAME} !-f
+    # RewriteCond %{REQUEST_FILENAME} !-d
+    # RewriteRule ^(.*)$ index.php [L,QSA]
+</IfModule>
+
+# 4. Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "no-referrer-when-downgrade"
+</IfModule>
+
+# 5. Default Index Page
+DirectoryIndex index.php

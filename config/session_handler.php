@@ -29,33 +29,53 @@ class DbSessionHandler implements SessionHandlerInterface
 
     public function read(string $id): string|false
     {
-        $stmt = $this->pdo->prepare(
-            'SELECT data FROM sessions WHERE id = ? AND last_access >= ?'
-        );
-        $stmt->execute([$id, time() - $this->lifetime]);
-        $row = $stmt->fetch();
-        return $row ? $row['data'] : '';
+        try {
+            $stmt = $this->pdo->prepare(
+                'SELECT data FROM sessions WHERE id = ? AND last_access >= ?'
+            );
+            $stmt->execute([$id, time() - $this->lifetime]);
+            $row = $stmt->fetch();
+            return $row ? $row['data'] : '';
+        } catch (Throwable $e) {
+            error_log('Session read error: ' . $e->getMessage());
+            return '';
+        }
     }
 
     public function write(string $id, string $data): bool
     {
-        $stmt = $this->pdo->prepare(
-            'REPLACE INTO sessions (id, data, last_access) VALUES (?, ?, ?)'
-        );
-        return $stmt->execute([$id, $data, time()]);
+        try {
+            $stmt = $this->pdo->prepare(
+                'REPLACE INTO sessions (id, data, last_access) VALUES (?, ?, ?)'
+            );
+            return $stmt->execute([$id, $data, time()]);
+        } catch (Throwable $e) {
+            error_log('Session write error: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function destroy(string $id): bool
     {
-        $stmt = $this->pdo->prepare('DELETE FROM sessions WHERE id = ?');
-        return $stmt->execute([$id]);
+        try {
+            $stmt = $this->pdo->prepare('DELETE FROM sessions WHERE id = ?');
+            return $stmt->execute([$id]);
+        } catch (Throwable $e) {
+            error_log('Session destroy error: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function gc(int $max_lifetime): int|false
     {
-        $stmt = $this->pdo->prepare('DELETE FROM sessions WHERE last_access < ?');
-        $stmt->execute([time() - $max_lifetime]);
-        return $stmt->rowCount();
+        try {
+            $stmt = $this->pdo->prepare('DELETE FROM sessions WHERE last_access < ?');
+            $stmt->execute([time() - $max_lifetime]);
+            return $stmt->rowCount();
+        } catch (Throwable $e) {
+            error_log('Session gc error: ' . $e->getMessage());
+            return 0;
+        }
     }
 }
 
