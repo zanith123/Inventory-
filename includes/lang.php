@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    require_once __DIR__ . '/../config/session_handler.php';
 }
 if (!isset($_SESSION['lang']) || !in_array($_SESSION['lang'], ['en', 'km'], true)) {
     $_SESSION['lang'] = 'en';
