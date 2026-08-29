@@ -1,0 +1,42 @@
+name: PHP Syntax Lint
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  php-lint:
+    name: PHP Lint Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.1', '8.2', '8.3']
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: pdo, pdo_mysql
+
+      - name: Lint PHP Files
+        run: |
+          echo "Linting all PHP files for syntax errors..."
+          ERRORS=0
+          while IFS= read -r -d '' file; do
+            php -l "$file" || ERRORS=$((ERRORS + 1))
+          done < <(find . -type f -name "*.php" \
+                    -not -path "*/vendor/*" \
+                    -not -path "*/node_modules/*" \
+                    -not -path "*/.git/*" -print0)
+          
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "Linting failed: $ERRORS syntax error(s) found."
+            exit 1
+          fi
+          echo "All PHP files passed syntax checking successfully!"

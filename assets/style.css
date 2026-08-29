@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;600;700&display=swap');
+body[lang="km"], body[lang="km"] * { font-family: 'Kantumruy Pro', 'Inter', sans-serif; }
+
+:root{
+  --bg:#05080D; --panel:#0E141C; --panel-alt:#131C27;
+  --line:#1C2B3A; --line-bright:#2B4356;
+  --muted:#7C8FA3;
+  --accent:#22D3EE; --accent-dim:#0B7285; --accent-tint:rgba(34,211,238,.10);
+  --good:#34D399; --good-tint:rgba(52,211,153,.12);
+  --warn:#FBBF24; --danger:#F87171; --danger-tint:rgba(248,113,113,.12);
+}
+
+body{ background:var(--bg) !important; font-family:'Inter',-apple-system,sans-serif; color:#E7EDF3; }
+h1,h2,h3,h4,h5{ font-family:'Rajdhani',sans-serif; font-weight:700; color:#fff; }
+.mono{ font-family:'JetBrains Mono',monospace; }
+
+.bracket-label{ font-family:'JetBrains Mono',monospace; font-size:.7rem; letter-spacing:.08em; color:var(--accent); text-transform:uppercase; }
+.bracket-label::before{ content:'[ '; color:var(--accent-dim); }
+.bracket-label::after{ content:' ]'; color:var(--accent-dim); }
+
+.barcode{ color:var(--accent); }
+
+/* sidebar */
+.sidebar{ background:var(--panel) !important; border-right:1px solid var(--line) !important; }
+.sidebar .fs-5{ color:#fff; }
+.sidebar-section{ color:#3E4C5E !important; font-family:'JetBrains Mono',monospace; font-size:.64rem; letter-spacing:.1em; }
+.sidebar .nav-link{ color:#8B9AAE !important; font-family:'JetBrains Mono',monospace; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; border-left:2px solid transparent; border-radius:0; }
+.sidebar .nav-link:hover{ background:var(--panel-alt); color:#fff !important; }
+.sidebar .nav-link.active{ background:var(--panel-alt) !important; color:var(--accent) !important; border-left-color:var(--accent); }
+
+/* buttons */
+.btn-primary{ background:var(--accent) !important; border-color:var(--accent) !important; color:#03181C !important; font-weight:600; }
+.btn-primary:hover{ filter:brightness(1.1); }
+.btn-outline-primary{ color:var(--accent) !important; border-color:var(--accent) !important; }
+.btn-outline-primary:hover{ background:var(--accent) !important; color:#03181C !important; }
+.btn-outline-danger{ border-color:var(--danger) !important; color:var(--danger) !important; }
+.text-primary{ color:var(--accent) !important; }
+
+/* form controls */
+.form-control, .form-select{ background:var(--bg) !important; border:1px solid var(--line) !important; color:#E7EDF3 !important; }
+.form-control:focus, .form-select:focus{ border-color:var(--accent) !important; box-shadow:0 0 0 .2rem var(--accent-tint) !important; background:var(--bg) !important; color:#E7EDF3 !important; }
+.form-control::placeholder{ color:#4E5D70; }
+label.form-label{ font-family:'JetBrains Mono',monospace; font-size:.72rem; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+
+/* cards + tables */
+.card{ background:var(--panel) !important; border:1px solid var(--line) !important; border-radius:8px !important; box-shadow:none !important; color:#E7EDF3; }
+table{ color:#D6DEE7 !important; }
+table thead.table-light th{
+  background:var(--panel) !important; text-transform:uppercase; letter-spacing:.06em; font-family:'JetBrains Mono',monospace;
+  font-size:.68rem; color:var(--muted) !important; border-bottom:1px solid var(--line) !important; font-weight:500;
+}
+table tbody tr{ border-color:var(--line) !important; }
+table tbody tr:hover{ background:var(--panel-alt) !important; }
+table td, table th{ border-color:var(--line) !important; }
+.slug-pill{ font-family:'JetBrains Mono',monospace; font-size:.76rem; background:var(--bg); border:1px solid var(--line); color:var(--accent); padding:3px 8px; border-radius:3px; }
+
+/* modal */
+.modal-content{ background:var(--panel-alt) !important; border:1px solid var(--line-bright) !important; color:#E7EDF3; }
+.btn-close{ filter:invert(1); }
+
+/* login / register split screen */
+.auth-wrap{ min-height:100vh; display:flex; }
+.auth-left{ flex:1.1; background:var(--bg); color:#fff; padding:56px; display:flex; flex-direction:column; justify-content:space-between; border-right:1px solid var(--line); }
+.auth-left h1{ font-size:2rem; line-height:1.25; max-width:420px; color:#fff; }
+.auth-left p{ color:var(--muted); max-width:380px; font-size:.95rem; }
+.auth-right{ flex:.9; background:var(--panel); display:flex; align-items:center; justify-content:center; padding:40px; }
+.auth-form{ width:100%; max-width:340px; background:var(--panel-alt); border:1px solid var(--line); padding:30px; }
+.auth-form .alert{ font-size:.85rem; }
+
+/* nav-pills (Stock Reports tabs) - Bootstrap defaults are unreadable on dark backgrounds */
+.nav-pills .nav-link{ color: var(--muted); }
+.nav-pills .nav-link.active{ background: var(--accent); color: #03181C; font-weight: 600; }
+.nav-pills .nav-link:not(.active):hover{ color: var(--accent); }
+
+/* small polish for stock report badges reusing badge-stock */
+.badge-stock{ font-family:'JetBrains Mono',monospace; font-size:.76rem; padding:2px 8px; border-radius:3px; font-weight:500; border:1px solid; display:inline-block; }
+.badge-normal{ background:var(--good-tint); color:var(--good); border-color:var(--good); }
+.badge-low{ background:var(--danger-tint); color:var(--danger); border-color:var(--danger); }
+
+/* profile page */
+.profile-avatar{
+  position:relative; width:96px; height:96px; border-radius:50%; overflow:hidden;
+  border:2px solid var(--line-bright); display:flex; align-items:center; justify-content:center;
+  background:var(--panel-alt); flex-shrink:0; cursor:pointer;
+}
+.profile-avatar img{ width:100%; height:100%; object-fit:cover; }
+.profile-avatar .mono{ font-size:1.6rem; color:var(--accent); }
+.profile-avatar-overlay{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.55); color:#fff; font-size:1.1rem; opacity:0; transition:opacity .15s;
+}
+.profile-avatar:hover .profile-avatar-overlay{ opacity:1; }
+
+body.theme-light{
+  --bg:#F3F5F7; --panel:#FFFFFF; --panel-alt:#EEF2F5;
+  --line:#DCE3E9; --line-bright:#C3CEDA;
+  --muted:#5B6B7D;
+  --accent:#0C8599; --accent-dim:#0A6E80; --accent-tint:rgba(12,133,153,.08);
+  --good:#0F9D6B; --good-tint:rgba(15,157,107,.10);
+  --warn:#B45309; --danger:#DC2626; --danger-tint:rgba(220,38,38,.08);
+  color: #0B1220 !important;
+}
+body.theme-light h1, body.theme-light h2, body.theme-light h3,
+body.theme-light h4, body.theme-light h5, body.theme-light .fs-5,
+body.theme-light .fs-3, body.theme-light .page-title { color: #0B1220 !important; }
+body { transition: background-color .15s, color .15s; }
+
+/* the base styles above hardcode a light-gray text color meant for the dark
+   theme — override it here so modals, cards, tables, and inputs stay
+   readable once the light background is active */
+body.theme-light .modal-content,
+body.theme-light .card,
+body.theme-light table,
+body.theme-light .form-check-label { color: #0B1220 !important; }
+body.theme-light .form-control,
+body.theme-light .form-select { color: #0B1220 !important; }
+body.theme-light .form-control::placeholder { color: #8792A0; }
+
+.theme-toggle-btn{
+  width:100%; display:flex; align-items:center; gap:8px;
+  padding:8px 10px; border-radius:7px; border:1px solid var(--line);
+  background:var(--panel-alt); color:var(--muted); cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:.76rem; text-transform:uppercase;
+  margin-bottom:8px;
+}
+.theme-toggle-btn:hover{ border-color:var(--accent); color:var(--accent); }
