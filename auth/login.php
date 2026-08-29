@@ -5,12 +5,33 @@ require_once __DIR__ . '/../config/db.php';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email']);
+    $email = strtolower(trim($_POST['email']));
     $pass  = $_POST['password'];
 
-    $stmt = $pdo->prepare('SELECT * FROM users WHERE email = ?');
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE LOWER(email) = ?');
     $stmt->execute([$email]);
     $user = $stmt->fetch();
+
+    // Auto-seed default accounts on cold-start if database has no users
+    if (!$user) {
+        $uCount = 0;
+        try {
+            $uCount = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+        } catch (\Throwable $t) {}
+
+        if ($uCount === 0) {
+            try {
+                $adminPass = password_hash('admin123', PASSWORD_BCRYPT);
+                $staffPass = password_hash('user123', PASSWORD_BCRYPT);
+                $pdo->exec("INSERT INTO users (name, email, password, role_id) VALUES ('System Admin', 'admin@inventory.com', '{$adminPass}', 1)");
+                $pdo->exec("INSERT INTO users (name, email, password, role_id) VALUES ('Inventory Staff', 'staff@inventory.com', '{$staffPass}', 2)");
+
+                $stmt = $pdo->prepare('SELECT * FROM users WHERE LOWER(email) = ?');
+                $stmt->execute([$email]);
+                $user = $stmt->fetch();
+            } catch (\Throwable $t) {}
+        }
+    }
 
     if ($user && password_verify($pass, $user['password'])) {
         $_SESSION['user_id']   = $user['id'];
@@ -23,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = __('login_invalid');
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
