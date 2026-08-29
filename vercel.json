@@ -1,13 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "api/**/*.php": {
-      "runtime": "vercel-php@0.7.3"
-    },
-    "*.php": {
-      "runtime": "vercel-php@0.7.3"
-    },
-    "*/**/*.php": {
+    "api/index.php": {
       "runtime": "vercel-php@0.7.3"
     }
   },
@@ -25,48 +19,8 @@
       "dest": "/screenshots/$1"
     },
     {
-      "src": "/auth/(.*)",
-      "dest": "/auth/$1"
-    },
-    {
-      "src": "/category/(.*)",
-      "dest": "/category/$1"
-    },
-    {
-      "src": "/product/(.*)",
-      "dest": "/product/$1"
-    },
-    {
-      "src": "/stock-in/(.*)",
-      "dest": "/stock-in/$1"
-    },
-    {
-      "src": "/stock-out/(.*)",
-      "dest": "/stock-out/$1"
-    },
-    {
-      "src": "/stock-adjustment/(.*)",
-      "dest": "/stock-adjustment/$1"
-    },
-    {
-      "src": "/stock-report/(.*)",
-      "dest": "/stock-report/$1"
-    },
-    {
-      "src": "/supplier/(.*)",
-      "dest": "/supplier/$1"
-    },
-    {
-      "src": "/unit/(.*)",
-      "dest": "/unit/$1"
-    },
-    {
-      "src": "/user/(.*)",
-      "dest": "/user/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/$1"
+      "dest": "/api/index.php"
     }
   ]
 }
