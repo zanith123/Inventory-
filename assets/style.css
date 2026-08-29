@@ -126,43 +126,98 @@ body.theme-light .form-control::placeholder { color: #8792A0; }
 }
 .theme-toggle-btn:hover{ border-color:var(--accent); color:var(--accent); }
 
-/* Version 2.0 Utilities & Print Media Styles */
+/* Smooth UI Animations & Transitions */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInToast {
+  from {
+    opacity: 0;
+    transform: translateX(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+main {
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.card {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease !important;
+}
+
+.card:hover {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.35) !important;
+}
+
 .card-stat {
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
 }
+
 .card-stat:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.01);
   border-color: var(--accent) !important;
+  box-shadow: 0 12px 25px -8px rgba(34, 211, 238, 0.2) !important;
 }
 
-.barcode-label-box {
-  background: #ffffff;
-  color: #000000;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  display: inline-block;
-  text-align: center;
-  margin: 0 auto;
+.sidebar .nav-link {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  .printable-area, .printable-area * {
-    visibility: visible;
-  }
-  .printable-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    color: #000 !important;
-    background: #fff !important;
-  }
-  .no-print {
-    display: none !important;
-  }
+.sidebar .nav-link:hover {
+  padding-left: 1.25rem !important;
 }
+
+.btn {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+table tbody tr {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+table tbody tr:hover {
+  transform: translateX(2px);
+}
+
+/* Modal Smooth Zoom & Backdrop Blur */
+.modal.fade .modal-dialog {
+  transform: scale(0.94);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.modal.show .modal-dialog {
+  transform: scale(1);
+}
+
+.modal-backdrop.show {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0.6 !important;
+}
+
+/* Toast Smooth Animation */
+.toast.show {
+  animation: slideInToast 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 
