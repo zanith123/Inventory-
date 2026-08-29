@@ -99,8 +99,9 @@ if ($host !== '127.0.0.1' && $host !== 'localhost' && $host !== 'db') {
 
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
+    try { $pdo->exec("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))"); } catch (\Throwable $t) {}
 } catch (PDOException $e) {
-    // If unknown database error (1049), attempt auto-creation of database
+    // If unknown database error (1049), attempt auto-creation of MySQL database
     if ($e->getCode() == 1049 || str_contains($e->getMessage(), 'Unknown database')) {
         try {
             $dsnNoDb = "mysql:host={$host};port={$port};charset={$charset}";
@@ -109,21 +110,62 @@ try {
             $pdo = new PDO($dsn, $user, $pass, $options);
             try { $pdo->exec("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))"); } catch (\Throwable $t) {}
         } catch (PDOException $ex) {
-            error_log('Database creation failed: ' . $ex->getMessage());
-            die('Database connection failed: ' . htmlspecialchars($ex->getMessage()));
+            $pdo = null;
         }
     } else {
-        error_log('Database connection error: ' . $e->getMessage());
-        if ($appDebug) {
-            die('Database connection failed: ' . htmlspecialchars($e->getMessage()) . '<br><br>Host: ' . htmlspecialchars($host) . '<br>Port: ' . htmlspecialchars($port) . '<br>DB: ' . htmlspecialchars($db) . '<br>User: ' . htmlspecialchars($user));
-        } else {
-            die('Database connection error. Please verify configuration or check server logs. (Add ?debug=1 to URL or set APP_DEBUG=true to view exact error details)');
+        $pdo = null;
+    }
+
+    // Fallback to SQLite if MySQL is unavailable (e.g. Vercel serverless without remote MySQL configured)
+    if (!$pdo) {
+        try {
+            $sqlitePath = sys_get_temp_dir() . '/inventory_v2.sqlite';
+            $pdo = new PDO('sqlite:' . $sqlitePath);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+
+            // Auto-seed SQLite schema & default accounts if missing
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS roles (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE);
+                INSERT OR IGNORE INTO roles (id, name) VALUES (1, 'Admin'), (2, 'User'), (3, 'Viewer');
+                
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT UNIQUE, password TEXT, role_id INTEGER DEFAULT 2, avatar TEXT, must_change_password INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+                
+                CREATE TABLE IF NOT EXISTS categories (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, slug TEXT UNIQUE, note TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+                CREATE TABLE IF NOT EXISTS units (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, note TEXT);
+                CREATE TABLE IF NOT EXISTS suppliers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, phone TEXT, email TEXT, address TEXT, note TEXT);
+                CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, sku TEXT UNIQUE, barcode TEXT, category_id INTEGER, supplier_id INTEGER, unit_id INTEGER, note TEXT, cost_price REAL DEFAULT 0, sale_price REAL DEFAULT 0, min_stock INTEGER DEFAULT 0, current_stock INTEGER DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+                CREATE TABLE IF NOT EXISTS stock_transactions (id INTEGER PRIMARY KEY AUTOINCREMENT, reference TEXT UNIQUE, type TEXT, transaction_date TEXT, note TEXT, supplier_id INTEGER, user_id INTEGER, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+                CREATE TABLE IF NOT EXISTS stock_transaction_items (id INTEGER PRIMARY KEY AUTOINCREMENT, transaction_id INTEGER, product_id INTEGER, qty INTEGER, unit_price REAL, subtotal REAL);
+                CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, data TEXT, last_access INTEGER);
+            ");
+
+            // Seed default Admin & Staff if no users exist
+            $userCount = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+            if ($userCount === 0) {
+                $adminPass = password_hash('admin123', PASSWORD_BCRYPT);
+                $staffPass = password_hash('user123', PASSWORD_BCRYPT);
+                $pdo->exec("INSERT INTO users (name, email, password, role_id) VALUES ('System Admin', 'admin@inventory.com', '{$adminPass}', 1)");
+                $pdo->exec("INSERT INTO users (name, email, password, role_id) VALUES ('Inventory Staff', 'staff@inventory.com', '{$staffPass}', 2)");
+
+                $pdo->exec("INSERT OR IGNORE INTO categories (name, slug) VALUES ('Laptops', 'laptops'), ('Smartphones', 'smartphones'), ('Accessories', 'accessories')");
+                $pdo->exec("INSERT OR IGNORE INTO units (name) VALUES ('pcs'), ('box'), ('set')");
+                $pdo->exec("INSERT OR IGNORE INTO suppliers (name, email) VALUES ('Tech Supplier Ltd', 'supplier@tech.com')");
+                $pdo->exec("INSERT OR IGNORE INTO products (name, sku, barcode, category_id, supplier_id, unit_id, cost_price, sale_price, min_stock, current_stock) VALUES ('MacBook Pro M3', 'LAP-MAC-M3', 'LAP-MAC-M3', 1, 1, 1, 1200.00, 1499.00, 5, 12)");
+                $pdo->exec("INSERT OR IGNORE INTO products (name, sku, barcode, category_id, supplier_id, unit_id, cost_price, sale_price, min_stock, current_stock) VALUES ('Dell XPS 15', 'LAP-DELL-XPS', 'LAP-DELL-XPS', 1, 1, 1, 950.00, 1199.00, 3, 2)");
+            }
+        } catch (\Throwable $sqEx) {
+            error_log('Database connection error: ' . $e->getMessage());
+            if ($appDebug) {
+                die('Database connection failed: ' . htmlspecialchars($e->getMessage()));
+            } else {
+                die('Database connection error. Please verify configuration or check server logs.');
+            }
         }
     }
 }
-
-try { $pdo->exec("SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))"); } catch (\Throwable $t) {}
-
 
 // Auto-create sessions table if missing
 try {
@@ -135,8 +177,6 @@ try {
             INDEX idx_last_access (last_access)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ");
-} catch (PDOException $e) {
+} catch (\Throwable $e) {
     // Session table check fallback
 }
-
-
